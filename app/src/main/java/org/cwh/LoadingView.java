@@ -82,7 +82,7 @@ public class LoadingView extends View{
     private void init(){
         density = Resources.getSystem().getDisplayMetrics().density;
         defaultSize = Math.round(50 * density);
-        currentColor = Color.parseColor("#02c069");
+        currentColor = Color.parseColor("#068bcf");
         paint = new Paint();
         paint.setAntiAlias(true);
         paint.setColor(currentColor);
@@ -187,7 +187,7 @@ public class LoadingView extends View{
         }
     }
 
-    private class ColorEvalutor implements TypeEvaluator{
+    private class ColorEvalutor2 implements TypeEvaluator{
         private int mCurrentRed = -1;
         private int mCurrentGreen = -1;
         private int mCurrentBlue = -1;
@@ -293,17 +293,115 @@ public class LoadingView extends View{
         arcAnim.setRepeatCount(-1);
         arcAnim.start();
 
-//        ValueAnimator colorAnim = ValueAnimator.ofObject(new ColorEvalutor(), "#068bcf", "#02c069");
-//        colorAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//            @Override
-//            public void onAnimationUpdate(ValueAnimator animation) {
-//                currentColor = Color.parseColor((String) animation.getAnimatedValue());
-//                invalidate();
-//            }
-//        });
-//        colorAnim.setDuration(1000);
-//        colorAnim.setRepeatCount(-1);
-//        colorAnim.start();
+        ValueAnimator colorAnim = ValueAnimator.ofObject(new ColorEvalutor(), "#068bcf", "#02c069");
+        colorAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                currentColor = Color.parseColor((String) animation.getAnimatedValue());
+                invalidate();
+            }
+        });
+        colorAnim.setDuration(1000);
+        colorAnim.setRepeatCount(-1);
+        colorAnim.start();
+    }
+
+    //red uncorrent
+    private class ColorEvalutor implements TypeEvaluator{
+        private int mCurrentRed = -1;
+        private int mCurrentGreen = -1;
+        private int mCurrentBlue = -1;
+        @Override
+        public Object evaluate(float fraction, Object startValue, Object endValue) {
+            String startColor = (String) startValue;
+            String endColor = (String) endValue;
+            int startRed = Integer.parseInt(startColor.substring(1, 3), 16);
+            int startGreen = Integer.parseInt(startColor.substring(3, 5), 16);
+            int startBlue = Integer.parseInt(startColor.substring(5, 7), 16);
+            int endRed = Integer.parseInt(endColor.substring(1, 3), 16);
+            int endGreen = Integer.parseInt(endColor.substring(3, 5), 16);
+            int endBlue = Integer.parseInt(endColor.substring(5, 7), 16);
+            if (mCurrentRed == -1) {
+                mCurrentRed = startRed;
+            }
+            if (mCurrentGreen == -1) {
+                mCurrentGreen = startGreen;
+            }
+            if (mCurrentBlue == -1) {
+                mCurrentBlue = startBlue;
+            }
+            // the diff of color
+            int redDiff = Math.abs(startRed - endRed);
+            int greenDiff = Math.abs(startGreen - endGreen);
+            int blueDiff = Math.abs(startBlue - endBlue);
+            int colorDiff = redDiff + greenDiff + blueDiff;
+            if(fraction < 0.5f){
+                if (mCurrentRed != endRed) {
+                    mCurrentRed = getCurrentColor(startRed, endRed, colorDiff, 0,
+                            fraction*2f);
+                } else if (mCurrentGreen != endGreen) {
+                    mCurrentGreen = getCurrentColor(startGreen, endGreen, colorDiff,
+                            redDiff, fraction*2f);
+                } else if (mCurrentBlue != endBlue) {
+                    mCurrentBlue = getCurrentColor(startBlue, endBlue, colorDiff,
+                            redDiff + greenDiff, fraction*2f);
+                }
+            }
+            else if(fraction < 1.0f && fraction > 0.5f){
+                if (mCurrentRed != startRed) {
+                    mCurrentRed = getCurrentColor(endRed, startRed, colorDiff, 0,
+                            fraction*2f-1f);
+                } else if (mCurrentGreen != startGreen) {
+                    mCurrentGreen = getCurrentColor(endGreen, startGreen, colorDiff,
+                            redDiff, fraction*2f-1f);
+                } else if (mCurrentBlue != startBlue) {
+                    mCurrentBlue = getCurrentColor(endBlue, startBlue, colorDiff,
+                            redDiff + greenDiff, fraction*2f-1f);
+                }
+            }
+
+
+            // compute the color and return String
+            String currentColor = "#" + getHexString(mCurrentRed)
+                    + getHexString(mCurrentGreen) + getHexString(mCurrentBlue);
+//            Log.e("aaa", currentColor);
+            return currentColor;
+        }
+
+        private int getCurrentColor(int startColor, int endColor, int colorDiff,
+                                    int offset, float fraction) {
+            int currentColor;
+            if (startColor > endColor) {
+                currentColor = (int) (startColor - (fraction * colorDiff - offset));
+                if (currentColor < endColor) {
+                    currentColor = endColor;
+                }
+                else if(currentColor > startColor){
+                    currentColor = startColor;
+                }
+            }
+            else {
+                currentColor = (int) (startColor + (fraction * colorDiff - offset));
+                if (currentColor > endColor) {
+                    currentColor = endColor;
+                }
+                else if(currentColor < startColor){
+                    currentColor = startColor;
+                }
+            }
+            return currentColor;
+        }
+
+        /**
+         * 10 -> 16
+         */
+        private String getHexString(int value) {
+            String hexString = Integer.toHexString(value);
+            if (hexString.length() == 1) {
+                hexString = "0" + hexString;
+            }
+            return hexString;
+        }
     }
 
     private class Circle{
