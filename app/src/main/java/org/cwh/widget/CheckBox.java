@@ -1,4 +1,4 @@
-package org.cwh;
+package org.cwh.widget;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;

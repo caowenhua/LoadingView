@@ -1,4 +1,4 @@
-package org.cwh;
+package org.cwh.widget;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -12,6 +12,8 @@ import android.graphics.drawable.Drawable;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.view.View;
+
+import org.cwh.R;
 
 public class SearchingView extends View {
 
